@@ -14,17 +14,95 @@ app.get('/', (req, res) => {
     })
 })
 
+// get all product
+// find by id
+app.get("/products", async (req, res) => {
+    try {
+        const products = await Product.find({});
+        return res.status(200).json({
+            status: true,
+            products: products
+        })
+    } catch (error) {
+        return res.status(404).json({
+            status: false,
+            message: "Product not found"
+        })
+    }
+})
 
-app.post("/product/create", async (req, res) => {
+// find by id
+app.get("/products/:id", async (req, res) => {
 
-    // console.log( req.body )
-    // return;
-   const newProduct  =  await Product.create(req.body);
- 
-    res.status(201).json({
-        newProduct: newProduct,
-        message: "product created"
-    })
+    const id = req.params.id;
+    try {
+        const product = await Product.findById(id);
+        return res.status(200).json({
+            status: true,
+            product: product
+        })
+    } catch (error) {
+        return res.status(404).json({
+            status: false,
+            message: "Product not found"
+        })
+    }
+})
+
+app.post("/products", async (req, res) => {
+
+    try {
+        const newProduct = await Product.create(req.body);
+        res.status(201).json({
+            newProduct: newProduct,
+            message: "product created"
+        })
+    } catch (error) {
+        if (error.name === 'ValidationError') {
+            // Mongoose validation error
+            const errors = {};
+            for (const field in error.errors) {
+              errors[field] = error.errors[field].message;
+            }
+            res.status(422).json({ errors });
+          } else {
+            // Other types of errors
+            res.status(500).json({ error: 'Internal Server Error' });
+          }
+        }
+});
+
+app.put("/products/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        await Product.findByIdAndUpdate(id, req.body);
+        return res.status(200).json({
+            status: true,
+            message: "product succesfully updated"
+        })
+    } catch (error) {
+        return res.status(404).json({
+            status: false,
+            message: "something went wrong"
+        })
+    }
+});
+
+// delete by id
+app.delete("/products/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        await Product.findByIdAndDelete(id);
+        return res.status(200).json({
+            status: true,
+            message: "product succesfully deleted"
+        })
+    } catch (error) {
+        return res.status(404).json({
+            status: false,
+            message: "something went wrong"
+        })
+    }
 });
 
 
